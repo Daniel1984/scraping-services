@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"time"
-
+	"net/url"
 	"scraping-service/models"
+	"time"
 )
-
-var httpClient = &http.Client{Timeout: 10 * time.Second}
 
 func getListingsURL(location string) string {
 	return fmt.Sprintf("https://www.airbnb.com/api/v2/explore_tabs"+
@@ -43,30 +41,35 @@ func getListingsURL(location string) string {
 }
 
 func getResponseBody(urls []string, ch chan []byte) {
-	// make range from urls and get listing info for each url and send it back
-	// via channel
-	req, _ := http.NewRequest(http.MethodGet, url, nil)
-	req.Header.Set("authority", "www.airbnb.com")
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
-	req.Header.Set("x-csrf-token", "V4$.airbnb.com$HxMVGU-RyKM$1Zwcm1JOrU3Tn0Y8oRrvN3Hc67ZQSbOKVnMjCRtZPzQ=")
-	res, err := httpClient.Do(req)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer res.Body.Close()
+	var httpClient = &http.Client{Timeout: 10 * time.Second}
+	for _, url := range urls {
+		req, _ := http.NewRequest(http.MethodGet, url, nil)
+		req.Header.Set("authority", "www.airbnb.com")
+		req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
+		req.Header.Set("x-csrf-token", "V4$.airbnb.com$HxMVGU-RyKM$1Zwcm1JOrU3Tn0Y8oRrvN3Hc67ZQSbOKVnMjCRtZPzQ=")
+		res, err := httpClient.Do(req)
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer res.Body.Close()
 
-	body, _ := ioutil.ReadAll(res.Body)
-	ch <- body
+		body, _ := ioutil.ReadAll(res.Body)
+		ch <- body
+	}
 }
 
 // Listing root path handler
 func GetListings(streetNames []string) {
 	var listingUrls = []string{}
 
-	for _, streetName := range streetNames {
-		url := getListingsURL(streetName)
-		append(listingUrls, url)
+	for _, street := range streetNames {
+		streetName := &url.URL{Path: street}
+		encodedStreetName := streetName.String()
+		url := getListingsURL(encodedStreetName)
+		listingUrls = append(listingUrls, url)
 	}
+
+	fmt.Println(listingUrls)
 
 	channel := make(chan []byte)
 	go getResponseBody(listingUrls, channel)
