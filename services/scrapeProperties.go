@@ -40,22 +40,22 @@ func getListingsURL(location string) string {
 		"&locale=en", location)
 }
 
-func getResponseBody(urls []string, ch chan []byte) {
+func getResponseBody(url string, ch chan []byte) {
 	var httpClient = &http.Client{Timeout: 10 * time.Second}
-	for _, url := range urls {
-		req, _ := http.NewRequest(http.MethodGet, url, nil)
-		req.Header.Set("authority", "www.airbnb.com")
-		req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
-		req.Header.Set("x-csrf-token", "V4$.airbnb.com$HxMVGU-RyKM$1Zwcm1JOrU3Tn0Y8oRrvN3Hc67ZQSbOKVnMjCRtZPzQ=")
-		res, err := httpClient.Do(req)
-		if err != nil {
-			fmt.Println(err)
-		}
-		defer res.Body.Close()
+	req, _ := http.NewRequest(http.MethodGet, url, nil)
+	req.Header.Set("authority", "www.airbnb.com")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
+	req.Header.Set("x-csrf-token", "V4$.airbnb.com$HxMVGU-RyKM$1Zwcm1JOrU3Tn0Y8oRrvN3Hc67ZQSbOKVnMjCRtZPzQ=")
+	res, err := httpClient.Do(req)
 
-		body, _ := ioutil.ReadAll(res.Body)
-		ch <- body
+	if err != nil {
+		fmt.Println(err)
 	}
+
+	defer res.Body.Close()
+
+	body, _ := ioutil.ReadAll(res.Body)
+	ch <- body
 }
 
 // Listing root path handler
@@ -72,18 +72,21 @@ func GetListings(streetNames []string) {
 	fmt.Println(listingUrls)
 
 	channel := make(chan []byte)
-	go getResponseBody(listingUrls, channel)
-	responseBody := <-channel
 
-	listing := models.Listing{}
-	json.Unmarshal(responseBody, &listing)
-	fmt.Println(listing)
+	for _, listingUrl := range listingUrls {
+		go getResponseBody(listingUrl, channel)
+		responseBody := <-channel
 
-	json, errMarshal := json.Marshal(listing)
-	if errMarshal != nil {
-		fmt.Println(errMarshal)
-		return
-	} else {
-		fmt.Println(json)
+		listing := models.Listing{}
+		json.Unmarshal(responseBody, &listing)
+		fmt.Println(listing)
+
+		_, errMarshal := json.Marshal(listing)
+		if errMarshal != nil {
+			fmt.Println("ERROR!")
+			return
+		} else {
+			fmt.Println("OK!")
+		}
 	}
 }
