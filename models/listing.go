@@ -3,6 +3,8 @@ package models
 // Listing represents listings metadata from airbnb endpoint
 type Listing struct {
 	ExploreTabs []struct {
+		TabId    string `json:"tab_id"`
+		TabName  string `json:"tab_name"`
 		Sections []struct {
 			Listings []struct {
 				Listing struct {

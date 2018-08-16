@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"scraping-service/models"
+	"sort"
 	"time"
 )
 
@@ -53,7 +54,6 @@ func getResponseBody(url string, ch chan []byte) {
 	}
 
 	defer res.Body.Close()
-
 	body, _ := ioutil.ReadAll(res.Body)
 	ch <- body
 }
@@ -69,8 +69,6 @@ func GetListings(streetNames []string) {
 		listingUrls = append(listingUrls, url)
 	}
 
-	fmt.Println(listingUrls)
-
 	channel := make(chan []byte)
 
 	for _, listingUrl := range listingUrls {
@@ -79,14 +77,22 @@ func GetListings(streetNames []string) {
 
 		listing := models.Listing{}
 		json.Unmarshal(responseBody, &listing)
-		fmt.Println(listing)
 
-		_, errMarshal := json.Marshal(listing)
-		if errMarshal != nil {
-			fmt.Println("ERROR!")
-			return
-		} else {
-			fmt.Println("OK!")
-		}
+		idx := sort.Search(len(listing.ExploreTabs), func(i int) bool {
+			tabId := listing.ExploreTabs[i].TabId
+			tabName := listing.ExploreTabs[i].TabName
+			return tabId == "home_tab" || tabId == "all_tab" || tabName == "Homes"
+		})
+
+		exploreTabs := listing.ExploreTabs[idx]
+		fmt.Println(exploreTabs.TabName)
+
+		//_, errMarshal := json.Marshal(listing)
+		//if errMarshal != nil {
+		//	fmt.Println("ERROR!")
+		//	return
+		//} else {
+		//	fmt.Println("OK!")
+		//}
 	}
 }
