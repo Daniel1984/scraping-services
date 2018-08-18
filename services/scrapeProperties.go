@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -13,29 +14,28 @@ import (
 
 func getListingsURL(location string) string {
 	return fmt.Sprintf("https://www.airbnb.com/api/v2/explore_tabs"+
-		"?version=1.3.2"+
+		"?version=1.3.9"+
+		"client_session_id=4bb22f21-bc3b-4399-89f1-dd1fb7d3482b"+
 		"&_format=for_explore_search_web"+
 		"&experiences_per_grid=20"+
-		"&items_per_grid=50"+
+		"&items_per_grid=18"+
 		"&guidebooks_per_grid=0"+
-		"&auto_ib=true"+
+		"&auto_ib=false"+
 		"&fetch_filters=true"+
 		"&is_guided_search=false"+
 		"&is_new_trips_cards_experiment=true"+
 		"&is_new_homes_cards_experiment=false"+
 		"&luxury_pre_launch=false"+
-		"&screen_size=large"+
+		"&screen_size=small"+
 		"&show_groupings=false"+
 		"&supports_for_you_v3=true"+
-		"&timezone_offset=120"+
+		"&timezone_offset=180"+
 		"&metadata_only=false"+
 		"&is_standard_search=true"+
-		"&selected_tab_id=all_tab"+
+		"&selected_tab_id=home_tab"+
 		"&tab_id=home_tab"+
 		"&location=%v"+
-		"&federated_search_session_id=e30fad3d-4dfd-4348-b72a-bb2d1f53ca0c"+
 		"&_intents=p1"+
-		"&screen_size=large"+
 		"&key=d306zoyjsyarp7ifhu67rjxn52tv0t20"+
 		"&currency=USD"+
 		"&locale=en", location)
@@ -50,7 +50,7 @@ func getResponseBody(url string, ch chan []byte) {
 	res, err := httpClient.Do(req)
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Error gettign response body: ", err)
 	}
 
 	defer res.Body.Close()
@@ -59,7 +59,7 @@ func getResponseBody(url string, ch chan []byte) {
 }
 
 // Listing root path handler
-func GetListings(streetNames []string) {
+func GetListings(streetNames []string, apiUrl string) {
 	var listingUrls = []string{}
 
 	for _, street := range streetNames {
@@ -72,27 +72,46 @@ func GetListings(streetNames []string) {
 	channel := make(chan []byte)
 
 	for _, listingUrl := range listingUrls {
-		go getResponseBody(listingUrl, channel)
-		responseBody := <-channel
+		sectionOffset := 1
 
-		listing := models.Listing{}
-		json.Unmarshal(responseBody, &listing)
+		for {
+			offsetUrl := fmt.Sprintf("%s%s%d", listingUrl, "&section_offset=", sectionOffset)
+			go getResponseBody(offsetUrl, channel)
+			responseBody := <-channel
 
-		idx := sort.Search(len(listing.ExploreTabs), func(i int) bool {
-			tabId := listing.ExploreTabs[i].TabId
-			tabName := listing.ExploreTabs[i].TabName
-			return tabId == "home_tab" || tabId == "all_tab" || tabName == "Homes"
-		})
+			listing := models.Listing{}
+			json.Unmarshal(responseBody, &listing)
 
-		exploreTabs := listing.ExploreTabs[idx]
-		fmt.Println(exploreTabs.TabName)
+			hometabIndex := sort.Search(len(listing.ExploreTabs), func(i int) bool {
+				tabId := listing.ExploreTabs[i].TabId
+				tabName := listing.ExploreTabs[i].TabName
+				return tabId == "home_tab" || tabId == "all_tab" || tabName == "Homes"
+			})
 
-		//_, errMarshal := json.Marshal(listing)
-		//if errMarshal != nil {
-		//	fmt.Println("ERROR!")
-		//	return
-		//} else {
-		//	fmt.Println("OK!")
-		//}
+			exploreTabs := listing.ExploreTabs[hometabIndex]
+			sectionOffset = exploreTabs.PaginationMetadata.SectionOffset
+
+			jsonString, errMarshal := json.Marshal(exploreTabs.Sections[0].Listings)
+			if errMarshal != nil {
+				fmt.Println("ERROR!")
+			} else {
+				fmt.Println("OK!")
+
+				var httpClient = &http.Client{Timeout: 10 * time.Second}
+				req, _ := http.NewRequest(http.MethodPost, apiUrl+"/persist-listings", bytes.NewBuffer(jsonString))
+				req.Header.Set("Content-Type", "application/json")
+				res, err := httpClient.Do(req)
+
+				if err != nil {
+					fmt.Println(err)
+				}
+
+				defer res.Body.Close()
+			}
+
+			if exploreTabs.PaginationMetadata.HasNextPage == false {
+				break
+			}
+		}
 	}
 }

@@ -15,6 +15,5 @@ func main() {
 
 	apiUrl := os.Getenv("API_URL")
 	streets := services.GetStreetNamesForUpdate(apiUrl)
-	services.GetListings(streets)
-	log.Print(streets)
+	services.GetListings(streets, apiUrl)
 }
