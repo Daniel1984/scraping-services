@@ -1,7 +1,6 @@
 package services
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -59,23 +58,18 @@ func getResponseBody(url string, ch chan []byte) {
 }
 
 // Listing root path handler
-func GetListings(streetNames []string, apiUrl string) {
-	var listingUrls = []string{}
-
-	for _, street := range streetNames {
-		streetName := &url.URL{Path: street}
-		encodedStreetName := streetName.String()
-		url := getListingsURL(encodedStreetName)
-		listingUrls = append(listingUrls, url)
-	}
-
+func GetListings(streetNames models.Streets, apiUrl string) {
 	channel := make(chan []byte)
 
-	for _, listingUrl := range listingUrls {
+	for _, street := range streetNames {
+		streetName := &url.URL{Path: street.Name}
+		encodedStreetName := streetName.String()
+		listingUrl := getListingsURL(encodedStreetName)
 		sectionOffset := 1
 
 		for {
 			offsetUrl := fmt.Sprintf("%s%s%d", listingUrl, "&section_offset=", sectionOffset)
+			time.Sleep(1 * time.Second)
 			go getResponseBody(offsetUrl, channel)
 			responseBody := <-channel
 
@@ -90,26 +84,10 @@ func GetListings(streetNames []string, apiUrl string) {
 
 			exploreTabs := listing.ExploreTabs[hometabIndex]
 			sectionOffset = exploreTabs.PaginationMetadata.SectionOffset
-
-			jsonString, errMarshal := json.Marshal(exploreTabs.Sections[0].Listings)
-			if errMarshal != nil {
-				fmt.Println("ERROR!")
-			} else {
-				fmt.Println("OK!")
-
-				var httpClient = &http.Client{Timeout: 10 * time.Second}
-				req, _ := http.NewRequest(http.MethodPost, apiUrl+"/persist-listings", bytes.NewBuffer(jsonString))
-				req.Header.Set("Content-Type", "application/json")
-				res, err := httpClient.Do(req)
-
-				if err != nil {
-					fmt.Println(err)
-				}
-
-				defer res.Body.Close()
-			}
+			PersistListings(exploreTabs.Sections[0].Listings, apiUrl)
 
 			if exploreTabs.PaginationMetadata.HasNextPage == false {
+				UpdateStreet(street, apiUrl)
 				break
 			}
 		}

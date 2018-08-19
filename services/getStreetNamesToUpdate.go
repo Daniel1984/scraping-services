@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"scraping-service/models"
 	"time"
 )
 
-type Streets []string
-
 var httpClient = &http.Client{Timeout: 10 * time.Second}
 
-func GetStreetNamesForUpdate(url string) Streets {
+func GetStreetNamesForUpdate(url string) models.Streets {
 	req, _ := http.NewRequest(http.MethodGet, url+"/street-names-to-update", nil)
 	res, err := httpClient.Do(req)
 
@@ -22,7 +21,7 @@ func GetStreetNamesForUpdate(url string) Streets {
 
 	defer res.Body.Close()
 
-	streetNames := Streets{}
+	streetNames := models.Streets{}
 	body, _ := ioutil.ReadAll(res.Body)
 	json.Unmarshal(body, &streetNames)
 

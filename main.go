@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
@@ -15,5 +16,6 @@ func main() {
 
 	apiUrl := os.Getenv("API_URL")
 	streets := services.GetStreetNamesForUpdate(apiUrl)
+	fmt.Println(streets[0].Name)
 	services.GetListings(streets, apiUrl)
 }
