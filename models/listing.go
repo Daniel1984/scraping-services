@@ -8,10 +8,7 @@ type Listing struct {
 		Sections []struct {
 			Listings []struct {
 				Listing struct {
-					BathroomLabel         string  `json:"bathroom_label"`
 					Bathrooms             float32 `json:"bathrooms"`
-					BedLabel              string  `json:"bed_label"`
-					BedroomLabel          string  `json:"bedroom_label"`
 					Bedrooms              float32 `json:"bedrooms"`
 					Beds                  float32 `json:"beds"`
 					City                  string  `json:"city"`
@@ -27,9 +24,6 @@ type Listing struct {
 					PersonCapacity        int     `json:"person_capacity"`
 					PictureCount          int     `json:"picture_count"`
 					PictureURL            string  `json:"picture_url"`
-					Picture               struct {
-						LargeRo string `json:"large_ro"`
-					} `json:"picture"`
 				} `json:"listing"`
 			} `json:"listings"`
 		} `json:"sections"`
