@@ -10,15 +10,15 @@ import (
 )
 
 func PersistListings(listings models.Listings, apiUrl string) {
-	jsonString, errMarshal := json.Marshal(listings)
+	sob, err := json.Marshal(listings)
 
-	if errMarshal != nil {
-		fmt.Println("ERROR!")
+	if err != nil {
+		fmt.Println("ERROR!", err)
 	} else {
 		fmt.Println("OK!")
 
 		var httpClient = &http.Client{Timeout: 10 * time.Second}
-		req, _ := http.NewRequest(http.MethodPost, apiUrl+"/persist-listings", bytes.NewBuffer(jsonString))
+		req, _ := http.NewRequest(http.MethodPost, apiUrl+"/persist-listings", bytes.NewBuffer(sob))
 		req.Header.Set("Content-Type", "application/json")
 		res, err := httpClient.Do(req)
 

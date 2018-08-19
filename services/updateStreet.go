@@ -14,14 +14,14 @@ type Street struct {
 }
 
 func UpdateStreet(street Street, apiUrl string) {
-	jsonString, errMarshal := json.Marshal(street)
+	sob, err := json.Marshal(street)
 
-	if errMarshal != nil {
-		fmt.Println("ERROR!")
+	if err != nil {
+		fmt.Println("ERROR!", err)
 	} else {
 		fmt.Println("OK!")
 		var httpClient = &http.Client{Timeout: 10 * time.Second}
-		req, _ := http.NewRequest(http.MethodPost, apiUrl+"/update-street", bytes.NewBuffer(jsonString))
+		req, _ := http.NewRequest(http.MethodPost, apiUrl+"/update-street", bytes.NewBuffer(sob))
 		req.Header.Set("Content-Type", "application/json")
 		res, err := httpClient.Do(req)
 
