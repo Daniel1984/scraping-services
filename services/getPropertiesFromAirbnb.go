@@ -42,13 +42,12 @@ func GetPropertiesFromAirbnb(url string, ch chan []byte) {
 	req.Header.Set("authority", "www.airbnb.com")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
 	req.Header.Set("x-csrf-token", "V4$.airbnb.com$HxMVGU-RyKM$1Zwcm1JOrU3Tn0Y8oRrvN3Hc67ZQSbOKVnMjCRtZPzQ=")
-	res, err := httpClient.Do(req)
 
-	if err != nil {
+	if res, err := httpClient.Do(req); err != nil {
 		fmt.Println("Error gettign response body: ", err)
+	} else {
+		defer res.Body.Close()
+		body, _ := ioutil.ReadAll(res.Body)
+		ch <- body
 	}
-
-	defer res.Body.Close()
-	body, _ := ioutil.ReadAll(res.Body)
-	ch <- body
 }

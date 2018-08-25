@@ -10,9 +10,7 @@ import (
 )
 
 func PersistListings(listings models.Listings, apiUrl string) {
-	sob, err := json.Marshal(listings)
-
-	if err != nil {
+	if sob, err := json.Marshal(listings); err != nil {
 		fmt.Println("ERROR!", err)
 	} else {
 		fmt.Println("OK!")
