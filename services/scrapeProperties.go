@@ -3,11 +3,17 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"net/url"
 	"scraping-service/models"
 	"sort"
 	"time"
 )
+
+func getRandIntInRange(min, max int) int {
+	rand.Seed(time.Now().Unix())
+	return rand.Intn(max-min) + min
+}
 
 func GetListings(streetNames models.Streets, apiUrl string) {
 	channel := make(chan []byte)
@@ -20,12 +26,12 @@ func GetListings(streetNames models.Streets, apiUrl string) {
 
 		for {
 			offsetUrl := fmt.Sprintf("%s%s%d", listingUrl, "&section_offset=", sectionOffset)
-			time.Sleep(1 * time.Second)
+			randReqDelay := getRandIntInRange(3, 5)
+			time.Sleep(time.Duration(randReqDelay) * time.Second)
 			go GetPropertiesFromAirbnb(offsetUrl, channel)
 			responseBody := <-channel
 			listing := models.Listing{}
 
-			fmt.Println("-------------------------------------------------")
 			fmt.Printf("Street: %s, Offset: %d\n", street.Name, sectionOffset)
 			fmt.Println("-------------------------------------------------")
 
