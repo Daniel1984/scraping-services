@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/url"
-	"scraping-service/models"
+	"scraping-service/listings-scraper/models"
 	"sort"
 	"time"
 )

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"scraping-service/utils"
+	"scraping-service/listings-scraper/utils"
 	"time"
 )
 

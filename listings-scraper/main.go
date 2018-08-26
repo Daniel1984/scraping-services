@@ -4,7 +4,7 @@ import (
 	"github.com/joho/godotenv"
 	"log"
 	"os"
-	"scraping-service/services"
+	"scraping-service/listings-scraper/services"
 )
 
 func main() {

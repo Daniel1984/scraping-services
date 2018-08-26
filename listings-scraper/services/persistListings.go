@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"scraping-service/models"
+	"scraping-service/listings-scraper/models"
 	"time"
 )
 
