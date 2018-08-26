@@ -16,7 +16,7 @@ func GetStreetNamesForUpdate(url string) models.Streets {
 	res, err := httpClient.Do(req)
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Error: ", err)
 	}
 
 	defer res.Body.Close()

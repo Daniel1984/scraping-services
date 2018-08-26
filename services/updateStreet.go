@@ -15,7 +15,7 @@ type Street struct {
 
 func UpdateStreet(street Street, apiUrl string) {
 	if sob, err := json.Marshal(street); err != nil {
-		fmt.Println("ERROR!", err)
+		fmt.Println("Error: ", err)
 	} else {
 		fmt.Println("OK!")
 		var httpClient = &http.Client{Timeout: 10 * time.Second}
@@ -24,7 +24,7 @@ func UpdateStreet(street Street, apiUrl string) {
 		res, err := httpClient.Do(req)
 
 		if err != nil {
-			fmt.Println("Error")
+			fmt.Println("Error: ", err)
 		}
 
 		defer res.Body.Close()

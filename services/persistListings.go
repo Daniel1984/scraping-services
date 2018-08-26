@@ -11,10 +11,8 @@ import (
 
 func PersistListings(listings models.Listings, apiUrl string) {
 	if sob, err := json.Marshal(listings); err != nil {
-		fmt.Println("ERROR!", err)
+		fmt.Println("Error: ", err)
 	} else {
-		fmt.Println("OK!")
-
 		var httpClient = &http.Client{Timeout: 10 * time.Second}
 		req, _ := http.NewRequest(http.MethodPost, apiUrl+"/persist-listings", bytes.NewBuffer(sob))
 		req.Header.Set("Content-Type", "application/json")
