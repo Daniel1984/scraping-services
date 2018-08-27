@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net/url"
 	"scraping-service/listings-scraper/models"
+	"scraping-service/listings-scraper/utils"
 	"sort"
 	"time"
 )
@@ -21,7 +22,7 @@ func GetListings(streetNames models.Streets, apiUrl string) {
 	for _, street := range streetNames {
 		streetName := &url.URL{Path: street.Name}
 		encodedStreetName := streetName.String()
-		listingUrl := getListingsURL(encodedStreetName)
+		listingUrl := utils.GetListingsURL(encodedStreetName)
 		sectionOffset := 0
 
 		for {
