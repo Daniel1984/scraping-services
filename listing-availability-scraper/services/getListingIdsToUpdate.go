@@ -12,8 +12,8 @@ type listingIds []int
 
 var httpClient = &http.Client{Timeout: 10 * time.Second}
 
-func GetStreetNamesForUpdate(url string) listingIds {
-	req, _ := http.NewRequest(http.MethodGet, url+"/availabilities-to-update", nil)
+func GetListingIdsToUpdate(url string) listingIds {
+	req, _ := http.NewRequest(http.MethodGet, url+"/listings-to-update", nil)
 	res, err := httpClient.Do(req)
 
 	if err != nil {
@@ -24,7 +24,10 @@ func GetStreetNamesForUpdate(url string) listingIds {
 
 	ids := listingIds{}
 	body, _ := ioutil.ReadAll(res.Body)
-	json.Unmarshal(body, &ids)
 
-	return ids
+	if err := json.Unmarshal(body, &ids); err != nil {
+		return listingIds{}
+	} else {
+		return ids
+	}
 }

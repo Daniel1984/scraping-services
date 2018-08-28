@@ -23,7 +23,10 @@ func GetStreetNamesForUpdate(url string) models.Streets {
 
 	streetNames := models.Streets{}
 	body, _ := ioutil.ReadAll(res.Body)
-	json.Unmarshal(body, &streetNames)
 
-	return streetNames
+	if err := json.Unmarshal(body, &streetNames); err != nil {
+		return models.Streets{}
+	} else {
+		return streetNames
+	}
 }
