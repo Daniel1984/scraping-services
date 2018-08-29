@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
@@ -14,6 +13,6 @@ func main() {
 	} else {
 		apiUrl := os.Getenv("API_URL")
 		listingIds := services.GetListingIdsToUpdate(apiUrl)
-		fmt.Println(listingIds)
+		services.UpdateAvailabilityData(listingIds, apiUrl)
 	}
 }

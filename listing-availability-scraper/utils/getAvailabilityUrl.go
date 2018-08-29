@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func GetAvailabilityUrl(listingId string) string {
+func GetAvailabilityUrl(listingId int) string {
 	t := time.Now()
 
 	return fmt.Sprintf("https://www.airbnb.com/api/v2/calendar_months"+

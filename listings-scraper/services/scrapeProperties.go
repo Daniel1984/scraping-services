@@ -39,7 +39,7 @@ func GetListings(streetNames models.Streets, apiUrl string) {
 			if err := json.Unmarshal(responseBody, &listing); err != nil {
 				fmt.Println("Error unmarshal rsp body: ", err)
 				UpdateStreet(street, apiUrl)
-				break
+				continue
 			} else {
 				hometabIndex := sort.Search(len(listing.ExploreTabs), func(i int) bool {
 					tabId := listing.ExploreTabs[i].TabId
