@@ -1,28 +1,22 @@
 package services
 
 import (
-	"encoding/json"
 	"fmt"
 	"scraping-service/listing-availability-scraper/models"
 	"scraping-service/listing-availability-scraper/utils"
 )
 
 func UpdateAvailabilityData(listingIds []int, apiUrl string) {
-	channel := make(chan []byte)
+	channel := make(chan models.Availabilities)
 
 	for _, listingId := range listingIds {
-		fmt.Printf("Getting availabilities for listingId: %d\n", listingId)
+		availabilityUrl := utils.GetAvailabilityUrl(listingId)
+
+		fmt.Printf("Getting availabilities for listingId: %v\n", availabilityUrl)
 		fmt.Println("-------------------------------------------------")
 
-		availabilityUrl := utils.GetAvailabilityUrl(listingId)
 		go ScrapeAvailabilities(availabilityUrl, channel)
 		response := <-channel
-		availabilities := models.Availabilities{}
-
-		if err := json.Unmarshal(response, &availabilities); err != nil {
-			fmt.Println("Error getting availabilities: ", err)
-		} else {
-			fmt.Println(availabilities.CalendarMonths[0].Days)
-		}
+		fmt.Println("got response ", response)
 	}
 }
