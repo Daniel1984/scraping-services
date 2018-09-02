@@ -3,20 +3,25 @@ package services
 import (
 	"fmt"
 	"scraping-service/listing-availability-scraper/models"
-	"scraping-service/listing-availability-scraper/utils"
 )
 
 func UpdateAvailabilityData(listingIds []int, apiUrl string) {
-	channel := make(chan models.Availabilities)
+	availabilitiesChan := make(chan models.AvailabilitiesToUpdate)
+	availabilitySubmitterChan := make(chan bool)
 
 	for _, listingId := range listingIds {
-		availabilityUrl := utils.GetAvailabilityUrl(listingId)
+		go ScrapeAvailabilities(listingId, availabilitiesChan)
+	}
 
-		fmt.Printf("Getting availabilities for listingId: %v\n", availabilityUrl)
-		fmt.Println("-------------------------------------------------")
+	for availabilities := range availabilitiesChan {
+		go SubmitAvailabilities(availabilities, apiUrl, availabilitySubmitterChan)
+	}
 
-		go ScrapeAvailabilities(availabilityUrl, channel)
-		response := <-channel
-		fmt.Println("got response ", response)
+	for submitAvailabilitySuccess := range availabilitySubmitterChan {
+		if submitAvailabilitySuccess == true {
+			fmt.Println("SUBMIT OK")
+		} else {
+			fmt.Println("SUBMIT ERR")
+		}
 	}
 }

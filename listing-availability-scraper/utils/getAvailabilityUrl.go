@@ -15,6 +15,6 @@ func GetAvailabilityUrl(listingId int) string {
 		"&listing_id=%v"+
 		"&month=%v"+
 		"&year=%v"+
-		"&count=4"+
+		"&count=3"+
 		"&_format=with_conditions", listingId, int(t.Month())-1, int(t.Year()))
 }

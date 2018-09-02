@@ -1,6 +1,11 @@
 package models
 
-type Days []struct {
+type AvailabilitiesToUpdate struct {
+	ListingId      int
+	Availabilities []Day
+}
+
+type Day struct {
 	Available           bool   `json:"available"`
 	Date                string `json:"date"`
 	AvailableForCheckin bool   `json:"available_for_checkin"`
@@ -19,8 +24,8 @@ type Days []struct {
 
 type Availabilities struct {
 	CalendarMonths []struct {
-		Days  Days `json:"days"`
-		Month int  `json:"month"`
-		Year  int  `json:"year"`
+		Days  []Day `json:"days"`
+		Month int   `json:"month"`
+		Year  int   `json:"year"`
 	} `json:"calendar_months"`
 }
