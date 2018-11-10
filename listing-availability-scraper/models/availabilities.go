@@ -1,8 +1,8 @@
 package models
 
 type AvailabilitiesToUpdate struct {
-	ListingId      int
-	Availabilities []Day
+	ListingId      int   `json:"listingId"`
+	Availabilities []Day `json:"availabilities"`
 }
 
 type Day struct {

@@ -5,29 +5,29 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"time"
 )
 
 type listingIds []int
 
-var httpClient = &http.Client{Timeout: 10 * time.Second}
-
-func GetListingIdsToUpdate(url string) listingIds {
-	req, _ := http.NewRequest(http.MethodGet, url+"/listings-to-update", nil)
-	res, err := httpClient.Do(req)
-
+func GetListingIdsToUpdate(url string) (listingIds, error) {
+	res, err := http.Get(url + "/listings-to-update")
 	if err != nil {
-		fmt.Println("Error: ", err)
+		return nil, err
 	}
 
 	defer res.Body.Close()
 
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	ids := listingIds{}
-	body, _ := ioutil.ReadAll(res.Body)
 
 	if err := json.Unmarshal(body, &ids); err != nil {
-		return listingIds{}
+		fmt.Println("Error: ", err)
+		return nil, err
 	} else {
-		return ids
+		return ids, nil
 	}
 }
