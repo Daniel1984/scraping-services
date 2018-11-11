@@ -33,6 +33,7 @@ type Listing struct {
 		PaginationMetadata struct {
 			HasNextPage   bool `json:"has_next_page"`
 			SectionOffset int  `json:"section_offset"`
+			ItemsOffset   int  `json:"items_offset"`
 		} `json:"pagination_metadata"`
 	} `json:"explore_tabs"`
 }

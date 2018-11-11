@@ -12,9 +12,7 @@ func SubmitAvailabilities(availabilities models.AvailabilitiesToUpdate, apiUrl s
 	if sob, err := json.Marshal(availabilities); err != nil {
 		fmt.Println("Error: ", err)
 	} else {
-		jsonByte := []byte(sob)
-
-		res, err := http.Post(apiUrl+"/update-availabilities", "application/json", bytes.NewBuffer(jsonByte))
+		res, err := http.Post(apiUrl+"/update-availabilities", "application/json", bytes.NewBuffer(sob))
 		if err != nil {
 			fmt.Println("Err:", err)
 		}

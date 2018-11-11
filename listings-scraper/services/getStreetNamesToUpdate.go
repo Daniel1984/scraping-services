@@ -3,30 +3,27 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/scraping-service/listings-scraper/models"
 	"io/ioutil"
 	"net/http"
-	"scraping-service/listings-scraper/models"
-	"time"
 )
 
-var httpClient = &http.Client{Timeout: 10 * time.Second}
-
-func GetStreetNamesForUpdate(url string) models.Streets {
-	req, _ := http.NewRequest(http.MethodGet, url+"/street-names-to-update", nil)
-	res, err := httpClient.Do(req)
+func GetStreetNamesForUpdate(url string) ([]models.Street, error) {
+	req, err := http.Get(url + "/street-names-to-update")
 
 	if err != nil {
 		fmt.Println("Error: ", err)
+		return nil, err
 	}
 
-	defer res.Body.Close()
+	defer req.Body.Close()
 
-	streetNames := models.Streets{}
-	body, _ := ioutil.ReadAll(res.Body)
+	streetNames := []models.Street{}
+	body, _ := ioutil.ReadAll(req.Body)
 
 	if err := json.Unmarshal(body, &streetNames); err != nil {
-		return models.Streets{}
+		return nil, err
 	} else {
-		return streetNames
+		return streetNames, nil
 	}
 }

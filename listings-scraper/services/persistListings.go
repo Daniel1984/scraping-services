@@ -4,24 +4,20 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/scraping-service/listings-scraper/models"
 	"net/http"
-	"scraping-service/listings-scraper/models"
-	"time"
 )
 
 func PersistListings(listings models.Listings, apiUrl string) {
 	if sob, err := json.Marshal(listings); err != nil {
 		fmt.Println("Error: ", err)
 	} else {
-		var httpClient = &http.Client{Timeout: 10 * time.Second}
-		req, _ := http.NewRequest(http.MethodPost, apiUrl+"/persist-listings", bytes.NewBuffer(sob))
-		req.Header.Set("Content-Type", "application/json")
-		res, err := httpClient.Do(req)
+		req, err := http.Post(apiUrl+"/persist-listings", "application/json", bytes.NewBuffer(sob))
 
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		defer res.Body.Close()
+		defer req.Body.Close()
 	}
 }

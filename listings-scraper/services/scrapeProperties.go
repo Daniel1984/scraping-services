@@ -3,10 +3,10 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/scraping-service/listings-scraper/models"
+	"github.com/scraping-service/listings-scraper/utils"
 	"math/rand"
 	"net/url"
-	"scraping-service/listings-scraper/models"
-	"scraping-service/listings-scraper/utils"
 	"sort"
 	"time"
 )
@@ -16,25 +16,29 @@ func getRandIntInRange(min, max int) int {
 	return rand.Intn(max-min) + min
 }
 
-func GetListings(streetNames models.Streets, apiUrl string) {
+func ScrapeListings(streetNames []models.Street, apiUrl string) {
 	channel := make(chan []byte)
 
 	for _, street := range streetNames {
+		if street.Name == "" {
+			continue
+		}
+
 		streetName := &url.URL{Path: street.Name}
 		encodedStreetName := streetName.String()
 		listingUrl := utils.GetListingsURL(encodedStreetName)
-		sectionOffset := 0
+		var sectionOffset int = 0
+		var itemsOffset int = 0
 
 		for {
-			offsetUrl := fmt.Sprintf("%s%s%d", listingUrl, "&section_offset=", sectionOffset)
-			randReqDelay := getRandIntInRange(3, 5)
+			offsetUrl := fmt.Sprintf("%s%s%d%s%d", listingUrl, "&section_offset=", sectionOffset, "&items_offset=", itemsOffset)
+			randReqDelay := getRandIntInRange(1, 2)
 			time.Sleep(time.Duration(randReqDelay) * time.Second)
 			go GetPropertiesFromAirbnb(offsetUrl, channel)
 			responseBody := <-channel
 			listing := models.Listing{}
 
-			fmt.Printf("Street: %s, Offset: %d\n", street.Name, sectionOffset)
-			fmt.Println("-------------------------------------------------")
+			fmt.Printf("Street: %s, Offset: %d\n", street.Name, itemsOffset)
 
 			if err := json.Unmarshal(responseBody, &listing); err != nil {
 				fmt.Println("Error unmarshal rsp body: ", err)
@@ -50,6 +54,7 @@ func GetListings(streetNames models.Streets, apiUrl string) {
 				if hometabIndex < len(listing.ExploreTabs) {
 					exploreTabs := listing.ExploreTabs[hometabIndex]
 					sectionOffset = exploreTabs.PaginationMetadata.SectionOffset
+					itemsOffset = exploreTabs.PaginationMetadata.ItemsOffset
 					PersistListings(exploreTabs.Sections[0].Listings, apiUrl)
 
 					if exploreTabs.PaginationMetadata.HasNextPage == false {

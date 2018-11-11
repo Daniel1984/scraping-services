@@ -6,7 +6,7 @@ import (
 
 func GetListingsURL(location string) string {
 	return fmt.Sprintf("https://www.airbnb.com/api/v2/explore_tabs"+
-		"?version=1.3.8"+
+		"?version=1.3.9"+
 		"&_format=for_explore_search_web"+
 		"&experiences_per_grid=20"+
 		"&items_per_grid=18"+

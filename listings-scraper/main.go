@@ -3,19 +3,23 @@ package main
 import (
 	"fmt"
 	"github.com/joho/godotenv"
+	"github.com/scraping-service/listings-scraper/services"
 	"log"
 	"os"
-	"scraping-service/listings-scraper/services"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
+	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
 	apiUrl := os.Getenv("API_URL")
-	streets := services.GetStreetNamesForUpdate(apiUrl)
-	fmt.Println(streets)
-	services.GetListings(streets, apiUrl)
+	streets, err := services.GetStreetNamesForUpdate(apiUrl)
+
+	if err != nil {
+		log.Fatal("Err:", err)
+	}
+
+	fmt.Println("Streets to update -", len(streets))
+	services.ScrapeListings(streets, apiUrl)
 }
